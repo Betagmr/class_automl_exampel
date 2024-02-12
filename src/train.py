@@ -1,56 +1,79 @@
-import pickle
+from catboost import CatBoostClassifier
+from lightgbm import LGBMClassifier
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score, f1_score
+from sklearn.neighbors import KNeighborsClassifier
 
-from clearml import Task
-from sklearn.metrics import accuracy_score
-from sklearn.model_selection import train_test_split
-from supervised.automl import AutoML
-
+from automl.optim_starts import auto_ml
 from src.components.data.process_data import process_data
 from src.components.data.read_dataset import read_dataset
-from src.settings.metadata import PROJECT_NAME, TRAINING_TASK
-from src.settings.train_params import XGBOOST_PARAMS
-from src.utils.logger import logger
 
 
-def train(task: Task):
-    logger.info("Reading dataset...")
-    df_data = read_dataset("time_series_60min_singleindex.csv")
+def train():
+    dataset = read_dataset("time_series_60min_singleindex.csv")
+    x_data, y_data = process_data(dataset)
 
-    # Split data
-    logger.info("Splitting data...")
-    x_data, y_data = process_data(df_data)
-    x_train, x_test, y_train, y_test = train_test_split(
-        x_data,
-        y_data,
-        test_size=0.2,
-        random_state=42,
-    )
+    arch = [
+        (
+            KNeighborsClassifier,
+            {
+                "name": "Knn",
+                "hyper_parameters": {
+                    "n_neighbors": [3, 5, 7],
+                    "weights": ["uniform", "distance"],
+                },
+            },
+        ),
+        # (
+        #     RandomForestClassifier,
+        #     {
+        #         "name": "RandomForest",
+        #         "hyper_parameters": {
+        #             "criterion": ["gini", "entropy"],
+        #             "max_features": [0.5, 0.6, 0.7, 0.8, 0.9, 1.0],
+        #             "min_samples_split": [10, 20, 30, 40, 50],
+        #             "max_depth": [4, 6, 8, 10, 12],
+        #         },
+        #     },
+        # ),
+        (
+            CatBoostClassifier,
+            {
+                "hyper_parameters": {
+                    "learning_rate": [0.05, 0.1, 0.2],
+                    "depth": [2, 3, 4, 5, 6],
+                    "rsm": [0.7, 0.8, 0.9, 1],
+                    "subsample": [0.7, 0.8, 0.9, 1],
+                    "min_data_in_leaf": [1, 5, 10, 15, 20, 30, 50],
+                    "bootstrap_type": ["Bernoulli"],
+                    "eval_metric": ["MultiClass"],
+                    "verbose": [False],
+                },
+            },
+        ),
+        (
+            LGBMClassifier,
+            {
+                "hyper_parameters": {
+                    "objective": ["binary"],
+                    "metric": ["binary_logloss"],
+                    "num_leaves": [3, 7, 15, 31],
+                    "learning_rate": [0.05, 0.075, 0.1, 0.15],
+                    "feature_fraction": [0.8, 0.9, 1.0],
+                    "bagging_fraction": [0.8, 0.9, 1.0],
+                    "min_data_in_leaf": [5, 10, 15, 20, 30, 50],
+                }
+            },
+        ),
+    ]
 
-    # Train model
-    logger.info("Training model...")
-    model = AutoML(
-        results_path="out/automl",
-        ml_task="multiclass_classification",
-        total_time_limit=5 * 60,
-        mode="Perform",
-    )
-    model.fit(x_train, y_train)
+    metrics = [
+        (accuracy_score, {"name": "accuracy"}),
+        (f1_score, {"name": "f1", "args": {"average": "weighted"}}),
+    ]
 
-    print("Model score:", model.score(x_test, y_test))
-
-    # Save to pickle
-    logger.info("Saving model...")
-    with open("out/model.pkl", "wb") as f:
-        pickle.dump(model, f)
+    auto_ml(x_data, y_data, arch, metrics)
 
 
 if __name__ == "__main__":
-    # task = Task.init(
-    #     project_name=PROJECT_NAME,
-    #     task_name=TRAINING_TASK,
-    # )
-
-    # task.connect(XGBOOST_PARAMS, "XGBoost parameters")
-    task = None
-
-    train(task)
+    train()
