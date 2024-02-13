@@ -1,10 +1,15 @@
 from catboost import CatBoostClassifier
+from keras.layers import Dense, Input
+from keras.models import Sequential
 from lightgbm import LGBMClassifier
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, f1_score
 from sklearn.neighbors import KNeighborsClassifier
 
-from automl.optim_starts import auto_ml
+from automl.core import auto_ml
+from automl.launch_strategy import simple_strategy
+from automl.optimize_strategy import optimize_strategy
+from automl.tf_wrap import AutoTFClassifier
 from src.components.data.process_data import process_data
 from src.components.data.read_dataset import read_dataset
 
@@ -15,6 +20,23 @@ def train():
 
     arch = [
         (
+            AutoTFClassifier,
+            {
+                "name": "AutoTF",
+                "init_args": {
+                    "network": Sequential(
+                        [
+                            Input(shape=x_data.shape[1]),
+                            Dense(64, activation="relu"),
+                            Dense(32, activation="relu"),
+                            Dense(4, activation="softmax"),
+                        ]
+                    ),
+                    "n_epochs": 10,
+                },
+            },
+        ),
+        (
             KNeighborsClassifier,
             {
                 "name": "Knn",
@@ -24,18 +46,18 @@ def train():
                 },
             },
         ),
-        # (
-        #     RandomForestClassifier,
-        #     {
-        #         "name": "RandomForest",
-        #         "hyper_parameters": {
-        #             "criterion": ["gini", "entropy"],
-        #             "max_features": [0.5, 0.6, 0.7, 0.8, 0.9, 1.0],
-        #             "min_samples_split": [10, 20, 30, 40, 50],
-        #             "max_depth": [4, 6, 8, 10, 12],
-        #         },
-        #     },
-        # ),
+        (
+            RandomForestClassifier,
+            {
+                "name": "RandomForest",
+                "hyper_parameters": {
+                    "criterion": ["gini", "entropy"],
+                    "max_features": [0.5, 0.6, 0.7, 0.8, 0.9, 1.0],
+                    "min_samples_split": [10, 20, 30, 40, 50],
+                    "max_depth": [4, 6, 8, 10, 12],
+                },
+            },
+        ),
         (
             CatBoostClassifier,
             {
@@ -55,8 +77,8 @@ def train():
             LGBMClassifier,
             {
                 "hyper_parameters": {
-                    "objective": ["binary"],
-                    "metric": ["binary_logloss"],
+                    # "objective": ["multiclass"],
+                    # "metric": ["binary_logloss"],
                     "num_leaves": [3, 7, 15, 31],
                     "learning_rate": [0.05, 0.075, 0.1, 0.15],
                     "feature_fraction": [0.8, 0.9, 1.0],
@@ -72,7 +94,12 @@ def train():
         (f1_score, {"name": "f1", "args": {"average": "weighted"}}),
     ]
 
-    auto_ml(x_data, y_data, arch, metrics)
+    list_of_strategies = [
+        simple_strategy,
+        optimize_strategy,
+    ]
+
+    result = auto_ml(x_data, y_data, arch, metrics, list_of_strategies)
 
 
 if __name__ == "__main__":

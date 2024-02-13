@@ -1,25 +1,43 @@
 from functools import reduce
 
 import optuna
+import pandas as pd
 from clearml import Task
 from optuna.trial import Trial
 from sklearn.model_selection import train_test_split
 
-from automl.base import calculate_metrics
+from automl.core import calculate_metrics
 
 
-def auto_ml(x_data, y_data, arch, metrics):
+def optimize_strategy(x_data, y_data, arch_list, metrics, previous_info):
     x_train, x_test, y_train, y_test = train_test_split(
         x_data, y_data, random_state=42, test_size=0.15
     )
 
-    for model_arch in arch:
-        print(model_arch)
-        score, values = optimize_strategy(x_train, y_train, x_test, y_test, model_arch, metrics)
-        print(score, values)
+    top_3_models = previous_info.sort_values("accuracy", ascending=False)[0:3]
+
+    print("Top 3 models:", top_3_models)
+
+    list_of_results = []
+    for model_idx in top_3_models.index:
+        model_arch = arch_list[model_idx]
+
+        list_of_results.append(
+            make_optimization(
+                x_train,
+                y_train,
+                x_test,
+                y_test,
+                model_arch,
+                metrics,
+            )
+        )
+
+    new_df = pd.DataFrame(list_of_results)
+    return pd.concat([previous_info, new_df], axis=0).fillna(0)
 
 
-def optimize_strategy(x_train, y_train, x_test, y_test, model_arch, metrics):
+def make_optimization(x_train, y_train, x_test, y_test, model_arch, metrics):
     model_init, model_args = model_arch
     model_name = model_args.get("name", model_init.__name__)
     model_hyper = model_args.get("hyper_parameters", {})
@@ -54,7 +72,7 @@ def optimize_strategy(x_train, y_train, x_test, y_test, model_arch, metrics):
 
     task.close()
 
-    return study.best_params, study.best_value
+    return {"model": model_name, "accuracy": study.best_value}
 
 
 def objective(
