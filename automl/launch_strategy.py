@@ -6,6 +6,8 @@ from sklearn.model_selection import StratifiedKFold
 
 from automl.core import calculate_metrics
 
+SPLIT_METHOD = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+
 
 def simple_strategy(
     x_data,
@@ -13,9 +15,10 @@ def simple_strategy(
     arch_list,
     metrics,
     previous_info=None,
+    split_method=SPLIT_METHOD,
 ):
-    kfs = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
-    split_indexes = list(kfs.split(x_data, y_data))
+    split_indexes = list(split_method.split(x_data, y_data))
+    print("Split indexes:", split_indexes)
 
     models_results = []
     for model_init, args in arch_list:
@@ -45,7 +48,7 @@ def simple_strategy(
             metrics,
         )
 
-        model_info = {"model": model_name} | model_metrics
+        model_info = {"model": model_name, "params": init_args} | model_metrics
         print(model_info, "\n")
 
         # Add results to the list

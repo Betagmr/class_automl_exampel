@@ -1,13 +1,11 @@
-import numpy as np
 import pandas as pd
-from tqdm import tqdm
 
 
 def auto_ml(x_data, y_data, arch, metrics, strategies):
     automl_info = pd.DataFrame()
 
-    for strategy in strategies:
-        automl_info = strategy(x_data, y_data, arch, metrics, automl_info)
+    for strategy, args in strategies:
+        automl_info = strategy(x_data, y_data, arch, metrics, automl_info, **args.get("args", {}))
 
     return automl_info
 

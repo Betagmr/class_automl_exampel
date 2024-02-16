@@ -9,12 +9,22 @@ from sklearn.model_selection import train_test_split
 from automl.core import calculate_metrics
 
 
-def optimize_strategy(x_data, y_data, arch_list, metrics, previous_info):
+def optimize_strategy(
+    x_data,
+    y_data,
+    arch_list,
+    metrics,
+    previous_info,
+    shuffle=True,
+    target=None,
+    direction="minimize",
+):
     x_train, x_test, y_train, y_test = train_test_split(
-        x_data, y_data, random_state=42, test_size=0.15
+        x_data, y_data, random_state=42, test_size=0.15, shuffle=shuffle
     )
 
-    top_3_models = previous_info.sort_values("accuracy", ascending=False)[0:3]
+    ascending = direction == "minimize"
+    top_3_models = previous_info.sort_values(target, ascending=ascending)[0:3]
 
     print("Top 3 models:", top_3_models)
 
@@ -30,6 +40,8 @@ def optimize_strategy(x_data, y_data, arch_list, metrics, previous_info):
                 y_test,
                 model_arch,
                 metrics,
+                target,
+                direction,
             )
         )
 
@@ -37,7 +49,7 @@ def optimize_strategy(x_data, y_data, arch_list, metrics, previous_info):
     return pd.concat([previous_info, new_df], axis=0).fillna(0)
 
 
-def make_optimization(x_train, y_train, x_test, y_test, model_arch, metrics):
+def make_optimization(x_train, y_train, x_test, y_test, model_arch, metrics, target, direction):
     model_init, model_args = model_arch
     model_name = model_args.get("name", model_init.__name__)
     model_hyper = model_args.get("hyper_parameters", {})
@@ -52,7 +64,7 @@ def make_optimization(x_train, y_train, x_test, y_test, model_arch, metrics):
 
     study = optuna.create_study(
         sampler=optuna.samplers.GridSampler(model_hyper),
-        direction="maximize",
+        direction=direction,
     )
 
     study.optimize(
@@ -66,13 +78,14 @@ def make_optimization(x_train, y_train, x_test, y_test, model_arch, metrics):
             metrics=metrics,
             model_init=model_init,
             model_hyper=model_hyper,
+            target=target,
         ),
         n_trials=n_trials,
     )
 
     task.close()
 
-    return {"model": model_name, "accuracy": study.best_value}
+    return {"model": model_name, "params": study.best_params, target: study.best_value}
 
 
 def objective(
@@ -85,6 +98,7 @@ def objective(
     metrics,
     model_init,
     model_hyper: dict,
+    target,
 ):
     params = {key: trial.suggest_categorical(key, value) for key, value in model_hyper.items()}
     model = model_init(**params)
@@ -102,4 +116,4 @@ def objective(
             iteration=trial.number,
         )
 
-    return list_metrics["accuracy"]
+    return list_metrics[target]

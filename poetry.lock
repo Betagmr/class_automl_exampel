@@ -1872,6 +1872,25 @@ files = [
 ]
 
 [[package]]
+name = "scikit-base"
+version = "0.7.2"
+description = "Base classes for sklearn-like parametric objects"
+optional = false
+python-versions = "<3.13,>=3.8"
+files = [
+    {file = "scikit-base-0.7.2.tar.gz", hash = "sha256:fde240ef169393b06efd44a7ca7f80297b330bedee7a98bf4a93aa33a5d06aab"},
+    {file = "scikit_base-0.7.2-py3-none-any.whl", hash = "sha256:6792f410f0e27d7ad0d9c9f1f96e72b0e7e2a93623256d39ca6fe712f1765303"},
+]
+
+[package.extras]
+all-extras = ["numpy", "pandas"]
+binder = ["jupyter"]
+dev = ["pre-commit", "pytest", "pytest-cov", "scikit-learn (>=0.24.0)"]
+docs = ["Sphinx (!=7.2.0,<8.0.0)", "jupyter", "myst-parser", "nbsphinx (>=0.8.6)", "numpydoc", "pydata-sphinx-theme", "sphinx-design (<0.6.0)", "sphinx-gallery (<0.16.0)", "sphinx-issues (<5.0.0)", "sphinx-panels", "tabulate"]
+linters = ["black", "doc8", "flake8", "flake8-bugbear", "flake8-builtins", "flake8-comprehensions", "flake8-print", "flake8-quotes", "isort", "mypy", "nbqa", "pandas-vet", "pep8-naming", "pydocstyle"]
+test = ["coverage", "numpy", "pandas", "pytest", "pytest-cov", "safety", "scikit-learn (>=0.24.0)", "scipy"]
+
+[[package]]
 name = "scikit-learn"
 version = "1.3.2"
 description = "A set of python modules for machine learning and data mining"
@@ -2063,6 +2082,47 @@ files = [
     {file = "six-1.16.0-py2.py3-none-any.whl", hash = "sha256:8abb2f1d86890a2dfb989f9a77cfcfd3e47c2a354b01111771326f8aa26e0254"},
     {file = "six-1.16.0.tar.gz", hash = "sha256:1e61c37477a1626458e36f7b1d82aa5c9b094fa4802892072e49de9c60c4c926"},
 ]
+
+[[package]]
+name = "sktime"
+version = "0.26.0"
+description = "A unified framework for machine learning with time series"
+optional = false
+python-versions = "<3.13,>=3.8"
+files = [
+    {file = "sktime-0.26.0-py3-none-any.whl", hash = "sha256:f4d1e76cfda682db26071bb1ac1aff751dd7647026502f30c652bf7044ab5e6c"},
+    {file = "sktime-0.26.0.tar.gz", hash = "sha256:4b3641c8c93d55f285c5d12101263e40a098650877aff4b2e63d9c1a3a63b8e8"},
+]
+
+[package.dependencies]
+numpy = ">=1.21,<1.27"
+packaging = "*"
+pandas = ">=1.1,<2.2.0"
+scikit-base = "<0.8.0"
+scikit-learn = ">=0.24,<1.5.0"
+scipy = ">=1.2,<2.0.0"
+
+[package.extras]
+alignment = ["dtw-python (>=1.3,<1.4)", "numba (>=0.53,<0.59)"]
+all-extras = ["arch (>=5.6,<6.4.0)", "cloudpickle", "dash (!=2.9.0)", "dask (<2024.1.1)", "dtw-python", "esig (==0.9.7)", "filterpy (>=1.4.5)", "gluonts (>=0.9)", "h5py", "hmmlearn (>=0.2.7)", "holidays", "keras-self-attention", "kotsu (>=0.3.1)", "matplotlib (>=3.3.2)", "mne", "numba (>=0.53,<0.59)", "pmdarima (>=1.8,!=1.8.1,<3.0.0)", "prophet (>=1.1)", "pycatch22 (<0.4.4)", "pykalman-bardo (>=0.9.7,<0.10)", "pyod (>=0.8)", "scikit-optimize", "scikit-posthocs (>=0.6.5)", "seaborn (>=0.11)", "seasonal", "skpro (>=2,<2.2.0)", "statsforecast (>=0.5.2,<1.7.0)", "statsmodels (>=0.12.1)", "stumpy (>=1.5.1)", "tbats (>=1.1)", "tensorflow", "tsfresh (>=0.17)", "tslearn (>=0.5.2,!=0.6.0,<0.7.0)", "xarray"]
+all-extras-pandas2 = ["arch (>=5.6,<6.4.0)", "cloudpickle", "dash (!=2.9.0)", "dask (<2024.1.1)", "dtw-python", "esig (==0.9.7)", "filterpy (>=1.4.5)", "gluonts (>=0.9)", "h5py", "hmmlearn (>=0.2.7)", "holidays", "keras-self-attention", "kotsu (>=0.3.1)", "matplotlib (>=3.3.2)", "mne", "numba (>=0.53,<0.59)", "pmdarima (>=1.8,!=1.8.1,<3.0.0)", "prophet (>=1.1)", "pycatch22 (<0.4.4)", "pykalman-bardo (>=0.9.7,<0.10)", "pyod (>=0.8)", "scikit-posthocs (>=0.6.5)", "seaborn (>=0.11)", "seasonal", "skpro (>=2,<2.2.0)", "statsforecast (>=0.5.2,<1.7.0)", "statsmodels (>=0.12.1)", "stumpy (>=1.5.1)", "tbats (>=1.1)", "tensorflow", "tsfresh (>=0.17)", "tslearn (>=0.5.2,!=0.6.0,<0.7.0)", "xarray"]
+annotation = ["hmmlearn (>=0.2.7,<0.4)", "numba (>=0.53,<0.59)", "pyod (>=0.8,<1.2)"]
+binder = ["jupyter", "pandas (<2.0.0)"]
+classification = ["esig (>=0.9.7,<0.10)", "numba (>=0.53,<0.59)", "tensorflow (>=2,<=2.14)", "tsfresh (>=0.17,<0.21)"]
+clustering = ["numba (>=0.53,<0.59)", "tslearn (>=0.5.2,!=0.6.0,<0.7.0)"]
+cython-extras = ["mrseql", "mrsqm", "numba (<0.59)"]
+dev = ["backoff", "httpx", "pre-commit", "pytest", "pytest-cov", "pytest-randomly", "pytest-timeout", "pytest-xdist", "wheel"]
+dl = ["tensorflow (>=2,<=2.14)", "torch"]
+docs = ["Sphinx (!=7.2.0,<8.0.0)", "jupyter", "myst-parser", "nbsphinx (>=0.8.6)", "numpydoc", "pydata-sphinx-theme", "sphinx-copybutton", "sphinx-design (<0.6.0)", "sphinx-gallery (<0.16.0)", "sphinx-issues (<5.0.0)", "tabulate"]
+forecasting = ["arch (>=5.6,<6.4)", "pmdarima (>=1.8,!=1.8.1,<2.1)", "prophet (>=1.1,<1.2)", "skpro (>=2,<2.2)", "statsforecast (>=0.5.2,<1.7)", "statsmodels (>=0.12.1,<0.15)", "tbats (>=1.1,<1.2)"]
+mlflow = ["mlflow"]
+mlflow-tests = ["boto3", "botocore", "mlflow", "moto"]
+networks = ["keras-self-attention (>=0.51,<0.52)", "tensorflow (>=2,<=2.14)"]
+pandas1 = ["pandas (<2.0.0)"]
+param-est = ["seasonal (>=0.3.1,<0.4)", "statsmodels (>=0.12.1,<0.15)"]
+regression = ["numba (>=0.53,<0.59)", "tensorflow (>=2,<=2.14)"]
+tests = ["pytest (>=7.4,<7.5)", "pytest-cov (>=4.1,<4.2)", "pytest-randomly (>=3.15,<3.16)", "pytest-timeout (>=2.1,<2.3)", "pytest-xdist (>=3.3,<3.6)"]
+transformations = ["esig (>=0.9.7,<0.10)", "filterpy (>=1.4.5,<1.5)", "holidays (>=0.29,<0.42)", "mne (>=1.5,<1.7)", "numba (>=0.53,<0.59)", "pycatch22 (>=0.4,<0.4.4)", "pykalman-bardo (>=0.9.7,<0.10)", "statsmodels (>=0.12.1,<0.15)", "stumpy (>=1.5.1,<1.13)", "tsfresh (>=0.17,<0.21)"]
 
 [[package]]
 name = "slicer"
@@ -2483,4 +2543,4 @@ scikit-learn = ["scikit-learn"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.11, <3.12"
-content-hash = "4dcd7e8aa2c4bace9d457b5f43879b9d9c22c03ab95974df489babe679141315"
+content-hash = "bb2ed67c9ace9192ae266d7b46efe9460199f59089271474ccce585172343342"
